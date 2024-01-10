@@ -15,9 +15,9 @@ const PORT = process.env.PORT || 4000;
 app.use(express.json());
 app.use(cors());
 
-const getTournamentsPlayed = async () => {
+const getTournamentsPlayed = async (id) => {
   try {
-    const { data } = await axios.get('https://www.pdga.com/player/117533');
+    const { data } = await axios.get(`https://www.pdga.com/player/${id}`);
     const $ = cheerio.load(data);
     const tournaments = [];
 
@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
 
 app.get('/player/:id', async (req, res) => {
   try {
-    const tournaments = await getTournamentsPlayed();
+    const tournaments = await getTournamentsPlayed(req.params.id);
     res.json(tournaments);
   } catch (error) {
     throw error;
