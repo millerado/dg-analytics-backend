@@ -15,9 +15,37 @@ const PORT = process.env.PORT || 4000;
 app.use(express.json());
 app.use(cors());
 
+const getTournamentsPlayed = async () => {
+  try {
+    const { data } = await axios.get('https://www.pdga.com/player/117533');
+    const $ = cheerio.load(data);
+    const tournaments = [];
+
+    $('td.tournament > a').each((_idx, el) => {
+      const tournament = {};
+      tournament.name = $(el).text();
+      tournament.href = $(el).attr('href');
+      tournaments.push(tournament);
+    });
+
+    return tournaments;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Set up routes
 app.get('/', (req, res) => {
-  res.json({ message: 'Test Message' });
+  res.json({ message: 'Test Message!' });
+});
+
+app.get('/player/:id', async (req, res) => {
+  try {
+    const tournaments = await getTournamentsPlayed();
+    res.json(tournaments);
+  } catch (error) {
+    throw error;
+  }
 });
 
 app.listen(PORT, () => {
