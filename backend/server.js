@@ -15,24 +15,49 @@ const PORT = process.env.PORT || 4000;
 app.use(express.json());
 app.use(cors());
 
-const getTournamentsPlayed = async (id) => {
+const getPlayerInfo = async (id) => {
   try {
     const { data } = await axios.get(`https://www.pdga.com/player/${id}`);
     const $ = cheerio.load(data);
-    const tournaments = [];
+    const playerInfo = { tournaments: [], years: [] };
 
     $('td.tournament > a').each((_idx, el) => {
       const tournament = {};
       tournament.name = $(el).text();
       tournament.href = $(el).attr('href');
-      tournaments.push(tournament);
+      playerInfo.tournaments.push(tournament);
     });
 
-    return tournaments;
+    $('ul.tabs.secondary > li > a').each((_idx, el) => {
+      let year = '';
+      year = $(el).text();
+      playerInfo.years.push(year);
+    });
+
+    return playerInfo;
   } catch (error) {
     throw error;
   }
 };
+
+// const getTournamentsPlayed = async (id) => {
+//   try {
+//     const { data } = await axios.get(`https://www.pdga.com/player/${id}`);
+//     const $ = cheerio.load(data);
+//     const tournaments = [];
+
+//     $('td.tournament > a').each((_idx, el) => {
+//       const tournament = {};
+//       tournament.name = $(el).text();
+//       tournament.href = $(el).attr('href');
+//       tournaments.push(tournament);
+//     });
+
+//     return tournaments;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
 
 // Set up routes
 app.get('/', (req, res) => {
@@ -41,8 +66,8 @@ app.get('/', (req, res) => {
 
 app.get('/player/:id', async (req, res) => {
   try {
-    const tournaments = await getTournamentsPlayed(req.params.id);
-    res.json(tournaments);
+    const playerInfo = await getPlayerInfo(req.params.id);
+    res.json(playerInfo);
   } catch (error) {
     throw error;
   }
